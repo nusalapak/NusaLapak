@@ -1,5 +1,15 @@
-import { sb, state, view, ui, esc, rupiah, safeUrl, waLink, toast, spinner, errBox, begin, show, loadAuth, navigate, renderNav } from './core.js';
+import { sb, state, view, ui, esc, rupiah, safeUrl, waLink, toast, spinner, errBox, notice, begin, show, loadAuth, navigate, renderNav } from './core.js';
 import { ADMIN_WA } from './config.js';
+
+// Warna papan nama toko (dipilih tetap berdasarkan slug)
+const tones = [
+  ['bg-kunyit', 'text-ink'],
+  ['bg-sambal', 'text-white'],
+  ['bg-pandan', 'text-white'],
+  ['bg-ink', 'text-white'],
+];
+const toneOf = (slug) => tones[[...String(slug)].reduce((a, c) => a + c.charCodeAt(0), 0) % tones.length];
+const initialOf = (name) => (String(name).trim()[0] || '?').toUpperCase();
 
 // =====================================================
 // HALAMAN UTAMA  (#/)
@@ -9,58 +19,91 @@ export async function renderHome() {
   const daftarWa = waLink(ADMIN_WA, 'Halo Admin NusaLapak, saya ingin mendaftarkan usaha saya agar punya etalase digital. Mohon info paket & caranya ya.');
 
   show(v, `
-    <section class="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
-      <div class="max-w-5xl mx-auto px-4 py-14 sm:py-20 text-center">
-        <p class="inline-block bg-white/15 rounded-full px-3 py-1 text-xs font-semibold mb-4">Etalase digital untuk UMKM</p>
-        <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight">Punya lapak online sendiri,<br>pesanan langsung ke WhatsApp</h1>
-        <p class="mt-4 text-emerald-50 max-w-2xl mx-auto text-sm sm:text-base">
-          NusaLapak membuatkan katalog produk atau menu usaha Anda dalam satu link cantik.
-          Tanpa ribet bikin website, tanpa biaya besar. Pelanggan tinggal pilih, lalu pesan lewat WhatsApp.
-        </p>
-        <div class="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="${esc(daftarWa)}" target="_blank" rel="noopener" class="${ui.btnWa} text-base px-6 py-3">Daftar via WhatsApp Admin</a>
-          <a href="#daftar-toko" data-scroll class="inline-flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white text-base font-semibold px-6 py-3 transition">Lihat Toko UMKM</a>
+    <section class="bg-kunyit border-b-2 border-ink">
+      <div class="max-w-5xl mx-auto px-4 py-12 lg:py-20 grid lg:grid-cols-[1.15fr_.85fr] gap-12 items-center">
+        <div>
+          <h1 class="font-display text-[2.6rem] sm:text-6xl lg:text-7xl font-extrabold leading-[0.95]">
+            Katalog jualanmu, satu link. Pesanan masuk ke WhatsApp.
+          </h1>
+          <p class="mt-5 text-base sm:text-lg max-w-xl text-ink/80 leading-relaxed">
+            NusaLapak membuatkan etalase produk atau menu untuk usaha kecilmu. Pelanggan memilih,
+            menekan pesan, dan daftar belanjanya langsung tersusun rapi di chat WhatsApp kamu.
+          </p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            <a href="${esc(daftarWa)}" target="_blank" rel="noopener" class="${ui.btnWa} text-base px-6 py-3">Daftarkan usahamu lewat WhatsApp</a>
+            <a href="#daftar-toko" data-scroll class="${ui.btnLight} text-base px-6 py-3">Lihat toko yang sudah jalan</a>
+          </div>
+        </div>
+
+        <div class="nota-wrap" aria-label="Contoh pesanan yang masuk ke WhatsApp penjual">
+          <div class="bg-white px-5 pt-5 pb-3 text-sm">
+            <div class="flex items-baseline justify-between gap-3">
+              <span class="font-display font-extrabold text-xl">Pesanan baru</span>
+              <span class="text-xs text-ink/50">Contoh tampilan</span>
+            </div>
+            <p class="text-xs text-ink/60 mt-0.5">untuk Warung Bu Sari</p>
+            <div class="border-t-2 border-dashed border-ink/25 my-3"></div>
+            <ul class="grid gap-1.5">
+              <li class="flex justify-between gap-3"><span>1. Nasi goreng spesial x2</span><span class="tabular-nums">Rp 36.000</span></li>
+              <li class="flex justify-between gap-3"><span>2. Es teh manis x2</span><span class="tabular-nums">Rp 10.000</span></li>
+              <li class="flex justify-between gap-3"><span>3. Kerupuk x1</span><span class="tabular-nums">Rp 3.000</span></li>
+            </ul>
+            <div class="border-t-2 border-dashed border-ink/25 my-3"></div>
+            <div class="flex justify-between font-extrabold text-base"><span>Total</span><span class="tabular-nums">Rp 49.000</span></div>
+            <p class="text-xs text-ink/60 mt-3 leading-relaxed">Nama: Dewi<br>Catatan: sambalnya dipisah ya</p>
+          </div>
+          <div class="zigzag"></div>
+          <span class="stamp">Terkirim ke WhatsApp</span>
         </div>
       </div>
     </section>
 
-    <section class="max-w-5xl mx-auto px-4 py-12">
-      <h2 class="text-xl sm:text-2xl font-bold text-center">Kenapa NusaLapak?</h2>
-      <div class="grid sm:grid-cols-3 gap-4 mt-6">
-        ${[
-          ['🛍️', 'Katalog Rapi', 'Tampilkan produk, harga, dan foto dalam satu halaman yang mudah dibuka dari HP.'],
-          ['💬', 'Order via WhatsApp', 'Pesanan pelanggan otomatis tersusun rapi dan terkirim ke WhatsApp Anda.'],
-          ['⚡', 'Kelola Sendiri', 'Tambah, ubah, atau hapus produk kapan saja lewat dasbor sederhana.'],
-        ].map(([i, t, d]) => `
-          <div class="${ui.card} p-5 text-center">
-            <div class="text-3xl">${i}</div>
-            <h3 class="font-bold mt-2">${t}</h3>
-            <p class="text-sm text-slate-500 mt-1">${d}</p>
-          </div>`).join('')}
-      </div>
+    <section class="max-w-5xl mx-auto px-4 py-16 grid lg:grid-cols-[.8fr_1.2fr] gap-8 lg:gap-14">
+      <h2 class="font-display text-3xl sm:text-4xl font-extrabold leading-tight">Cukup satu link untuk semua dagangan</h2>
+      <dl class="border-y-2 border-ink/10 divide-y-2 divide-ink/10">
+        <div class="py-5">
+          <dt class="font-display text-xl font-bold">Katalog yang rapi</dt>
+          <dd class="mt-1 text-ink/70">Foto, harga, dan stok tampil di satu halaman yang enak dibuka dari HP.</dd>
+        </div>
+        <div class="py-5">
+          <dt class="font-display text-xl font-bold">Pesanan sudah tersusun</dt>
+          <dd class="mt-1 text-ink/70">Pelanggan tidak perlu mengetik daftar belanja. Item, jumlah, dan total ikut terkirim.</dd>
+        </div>
+        <div class="py-5">
+          <dt class="font-display text-xl font-bold">Kelola sendiri kapan saja</dt>
+          <dd class="mt-1 text-ink/70">Tambah, ubah, atau hapus produk lewat dasbor sederhana, tanpa perlu paham teknis.</dd>
+        </div>
+      </dl>
     </section>
 
-    <section class="bg-white border-y border-slate-200">
-      <div class="max-w-5xl mx-auto px-4 py-12">
-        <h2 class="text-xl sm:text-2xl font-bold text-center">Cara Kerjanya</h2>
-        <div class="grid sm:grid-cols-3 gap-4 mt-6 text-center">
+    <section class="bg-white border-y-2 border-ink">
+      <div class="max-w-5xl mx-auto px-4 py-16">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold">Tiga langkah sampai jualan</h2>
+        <ol class="mt-10 grid sm:grid-cols-3 gap-10 sm:gap-6">
           ${[
-            ['1', 'Hubungi Admin', 'Kirim pesan lewat WhatsApp untuk mendaftarkan usaha Anda.'],
-            ['2', 'Lapak Dibuat', 'Admin membuat lapak dan akun dasbor untuk Anda.'],
-            ['3', 'Mulai Jualan', 'Isi produk, bagikan link lapak ke pelanggan. Selesai!'],
+            ['1', 'Hubungi admin', 'Kirim pesan lewat WhatsApp dan ceritakan usahamu.'],
+            ['2', 'Lapak dibuatkan', 'Admin menyiapkan etalase dan akun dasbor untukmu.'],
+            ['3', 'Isi produk, bagikan link', 'Pasang di bio Instagram, status WhatsApp, atau cetak jadi QR.'],
           ].map(([n, t, d]) => `
-            <div>
-              <div class="mx-auto w-10 h-10 rounded-full bg-amber-400 text-white font-extrabold flex items-center justify-center">${n}</div>
-              <h3 class="font-bold mt-3">${t}</h3>
-              <p class="text-sm text-slate-500 mt-1">${d}</p>
-            </div>`).join('')}
-        </div>
+            <li>
+              <div class="font-display text-8xl font-extrabold leading-none text-transparent" style="-webkit-text-stroke:2px #1B1A17">${n}</div>
+              <h3 class="font-display text-xl font-bold mt-3">${t}</h3>
+              <p class="text-ink/70 mt-1">${d}</p>
+            </li>`).join('')}
+        </ol>
       </div>
     </section>
 
-    <section id="daftar-toko" class="max-w-5xl mx-auto px-4 py-12">
-      <h2 class="text-xl sm:text-2xl font-bold text-center">Toko UMKM Aktif</h2>
-      <div id="store-list" class="mt-6">${spinner}</div>
+    <section id="daftar-toko" class="max-w-5xl mx-auto px-4 py-16 scroll-mt-20">
+      <h2 class="font-display text-3xl sm:text-4xl font-extrabold">Toko yang sudah buka</h2>
+      <div id="store-list" class="mt-8">${spinner}</div>
+    </section>
+
+    <section class="bg-ink text-white">
+      <div class="max-w-5xl mx-auto px-4 py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold leading-tight max-w-xl">Usahamu belum punya etalase online?</h2>
+        <a href="${esc(daftarWa)}" target="_blank" rel="noopener" class="${ui.btnWa} text-base px-6 py-3 self-start md:self-auto" style="box-shadow:3px 3px 0 #FFC83D">Chat admin sekarang</a>
+      </div>
     </section>
   `);
 
@@ -79,20 +122,24 @@ export async function renderHome() {
     .order('created_at', { ascending: false });
   if (v !== view.id) return;
   const box = document.getElementById('store-list');
-  if (error) return (box.innerHTML = errBox(error.message));
+  if (error) return (box.innerHTML = `<p class="text-sm text-sambal">${esc(error.message)}</p>`);
   if (!data.length) {
-    box.innerHTML = '<p class="text-center text-slate-500 text-sm">Belum ada toko aktif. Jadilah yang pertama!</p>';
+    box.innerHTML = '<p class="text-ink/60">Belum ada toko yang aktif. Toko pertama akan muncul di sini.</p>';
     return;
   }
-  box.innerHTML = `<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${data
-    .map(
-      (s) => `
-      <a href="#/lapak/${esc(s.slug)}" class="${ui.card} p-4 hover:shadow-md hover:border-emerald-400 transition block">
-        <div class="font-bold text-emerald-700">${esc(s.name)}</div>
-        <p class="text-sm text-slate-500 mt-1 line-clamp-2">${esc(s.description || 'Kunjungi lapak kami!')}</p>
-        <span class="inline-block mt-3 text-xs font-semibold text-emerald-600">Kunjungi lapak &rarr;</span>
-      </a>`
-    )
+  box.innerHTML = `<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">${data
+    .map((s) => {
+      const [bg, fg] = toneOf(s.slug);
+      return `
+      <a href="#/lapak/${esc(s.slug)}" class="tile relative overflow-hidden rounded-xl border-2 border-ink ${bg} ${fg} p-5 min-h-[150px] flex flex-col justify-between">
+        <span aria-hidden="true" class="absolute -right-1 -top-3 font-display text-8xl font-extrabold leading-none opacity-20 select-none">${esc(initialOf(s.name))}</span>
+        <div class="relative">
+          <div class="font-display text-2xl font-extrabold leading-tight">${esc(s.name)}</div>
+          <p class="text-sm opacity-85 mt-1 line-clamp-2">${esc(s.description || 'Lihat menu dan produk kami.')}</p>
+        </div>
+        <span class="relative text-sm font-bold underline underline-offset-4 mt-4">Buka lapak</span>
+      </a>`;
+    })
     .join('')}</div>`;
 }
 
@@ -119,22 +166,20 @@ export async function renderLapak(slug) {
     }
     if (v !== view.id) return;
     if (suspended) {
-      return show(v, `
-        <div class="max-w-md mx-auto px-4 py-20 text-center">
-          <div class="text-5xl">⏸️</div>
-          <h1 class="text-xl font-bold mt-4">Lapak Sedang Ditangguhkan</h1>
-          <p class="text-sm text-slate-500 mt-2">Lapak ini sementara tidak dapat diakses. Silakan hubungi pemilik toko secara langsung atau kembali lagi nanti.</p>
-          <a href="#/" class="${ui.btn} mt-6">Kembali ke Beranda</a>
-        </div>`);
+      return show(v, notice({
+        title: 'Lapak sedang ditangguhkan',
+        text: 'Lapak ini sementara tidak bisa dibuka. Hubungi pemilik toko langsung, atau coba lagi nanti.',
+        cta: { href: '#/', label: 'Ke beranda' },
+      }));
     }
-    return show(v, `
-      <div class="max-w-md mx-auto px-4 py-20 text-center">
-        <div class="text-5xl">🔍</div>
-        <h1 class="text-xl font-bold mt-4">Lapak Tidak Ditemukan</h1>
-        <p class="text-sm text-slate-500 mt-2">Periksa kembali alamat link-nya.</p>
-        <a href="#/" class="${ui.btn} mt-6">Kembali ke Beranda</a>
-      </div>`);
+    return show(v, notice({
+      title: 'Lapak tidak ditemukan',
+      text: 'Alamat yang kamu buka tidak cocok dengan toko mana pun. Periksa lagi link-nya.',
+      cta: { href: '#/', label: 'Ke beranda' },
+    }));
   }
+
+  document.title = `${store.name} | NusaLapak`;
 
   const { data: products, error: pErr } = await supabaseProducts(store.id);
   if (v !== view.id) return;
@@ -142,52 +187,64 @@ export async function renderLapak(slug) {
 
   const byId = Object.fromEntries(products.map((p) => [p.id, p]));
   const cart = {};
+  const mediaCls = 'w-[84px] h-[84px] sm:w-24 sm:h-24 shrink-0 rounded-lg border border-ink/10';
 
-  const card = (p) => {
+  const row = (p) => {
     const img = safeUrl(p.image_url);
+    const id = esc(p.id);
+    const media = img
+      ? `<img src="${esc(img)}" alt="" loading="lazy" class="${mediaCls} object-cover bg-kunyit/30" onerror="this.removeAttribute('src')">`
+      : `<div class="${mediaCls} bg-kunyit/40 flex items-center justify-center font-display text-3xl font-extrabold text-ink/40" aria-hidden="true">${esc(initialOf(p.name))}</div>`;
+    const action = p.is_available
+      ? `<div data-row="${id}">
+           <button data-act="inc" data-id="${id}" data-add class="sticker inline-flex items-center rounded-md bg-ink text-white text-sm font-bold px-3 py-1.5">Tambah</button>
+           <div data-step style="display:none" class="inline-flex items-center border-2 border-ink rounded-md overflow-hidden bg-white">
+             <button data-act="dec" data-id="${id}" aria-label="Kurangi ${esc(p.name)}" class="w-8 h-8 font-bold hover:bg-kunyit">−</button>
+             <span data-qty class="w-7 text-center text-sm font-bold tabular-nums">0</span>
+             <button data-act="inc" data-id="${id}" aria-label="Tambah ${esc(p.name)}" class="w-8 h-8 font-bold hover:bg-kunyit">+</button>
+           </div>
+         </div>`
+      : '<span class="text-sm font-bold text-sambal">Stok habis</span>';
     return `
-    <div class="${ui.card} overflow-hidden flex flex-col">
-      ${img ? `<img src="${esc(img)}" alt="${esc(p.name)}" loading="lazy" class="w-full h-36 object-cover" onerror="this.remove()">` : ''}
-      <div class="p-3 flex flex-col flex-1">
-        <div class="font-semibold">${esc(p.name)}</div>
-        ${p.description ? `<p class="text-xs text-slate-500 mt-0.5">${esc(p.description)}</p>` : ''}
-        <div class="mt-auto pt-3 flex items-center justify-between gap-2">
-          <span class="font-bold text-emerald-700 text-sm">${rupiah(p.price)}</span>
-          ${p.is_available
-            ? `<div class="flex items-center gap-2">
-                 <button data-act="dec" data-id="${esc(p.id)}" class="w-8 h-8 rounded-full border border-slate-300 font-bold">−</button>
-                 <span data-qty="${esc(p.id)}" class="w-5 text-center text-sm font-semibold">0</span>
-                 <button data-act="inc" data-id="${esc(p.id)}" class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold">+</button>
-               </div>`
-            : '<span class="text-xs font-semibold text-red-600">Habis</span>'}
+    <article class="flex gap-3 bg-white border border-ink/15 rounded-xl p-3 ${p.is_available ? '' : 'opacity-60'}">
+      ${media}
+      <div class="min-w-0 flex-1 flex flex-col">
+        <h3 class="font-bold leading-snug">${esc(p.name)}</h3>
+        ${p.description ? `<p class="text-sm text-ink/60 line-clamp-2 mt-0.5">${esc(p.description)}</p>` : ''}
+        <div class="mt-auto pt-2 flex items-center justify-between gap-2">
+          <span class="price-tag">${rupiah(p.price)}</span>
+          ${action}
         </div>
       </div>
-    </div>`;
+    </article>`;
   };
 
   show(v, `
-    <section class="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
-      <div class="max-w-5xl mx-auto px-4 py-8">
-        <h1 class="text-2xl sm:text-3xl font-extrabold">${esc(store.name)}</h1>
-        ${store.description ? `<p class="text-emerald-50 text-sm mt-2 max-w-2xl">${esc(store.description)}</p>` : ''}
-        <a href="${esc(waLink(store.whatsapp, `Halo ${store.name}, saya mau tanya-tanya dulu ya.`))}" target="_blank" rel="noopener" class="${ui.btnWa} mt-4">Chat WhatsApp</a>
+    <div class="bg-kunyit">
+      <div class="awning"></div>
+      <div class="awning-edge"></div>
+      <div class="max-w-5xl mx-auto px-4 pt-6 pb-10">
+        <h1 class="font-display text-4xl sm:text-6xl font-extrabold leading-[0.95]">${esc(store.name)}</h1>
+        ${store.description ? `<p class="mt-3 max-w-2xl text-ink/80 leading-relaxed">${esc(store.description)}</p>` : ''}
+        <a href="${esc(waLink(store.whatsapp, `Halo ${store.name}, saya mau tanya-tanya dulu ya.`))}" target="_blank" rel="noopener" class="${ui.btnWa} mt-5">Tanya penjual lewat WhatsApp</a>
       </div>
-    </section>
+    </div>
 
-    <section class="max-w-5xl mx-auto px-4 py-6 pb-44">
-      <h2 class="font-bold text-lg mb-3">Daftar Produk / Menu</h2>
+    <section class="max-w-5xl mx-auto px-4 py-8 pb-52">
+      <h2 class="font-display text-2xl font-extrabold mb-4">Menu dan produk</h2>
       ${products.length
-        ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">${products.map(card).join('')}</div>`
-        : '<p class="text-sm text-slate-500">Produk belum tersedia.</p>'}
+        ? `<div class="grid sm:grid-cols-2 gap-3">${products.map(row).join('')}</div>`
+        : '<p class="text-ink/60">Produk belum ditambahkan. Cek lagi nanti.</p>'}
     </section>
 
-    <div id="cart-bar" class="hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 shadow-2xl p-3 z-30">
-      <div class="max-w-5xl mx-auto grid gap-2">
-        <div class="grid grid-cols-2 gap-2">
-          <input id="cust-name" maxlength="60" placeholder="Nama Anda" class="${ui.input}">
-          <input id="cust-note" maxlength="150" placeholder="Catatan (opsional)" class="${ui.input}">
+    <div id="cart-bar" class="hidden fixed bottom-0 inset-x-0 z-30 bg-ink text-white border-t-2 border-kunyit">
+      <div class="max-w-5xl mx-auto p-3 grid gap-2">
+        <p class="text-sm font-bold" id="cart-sum"></p>
+        <div class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+          <input id="cust-name" maxlength="60" placeholder="Nama kamu" aria-label="Nama kamu" class="${ui.input}">
+          <input id="cust-note" maxlength="150" placeholder="Catatan (opsional)" aria-label="Catatan pesanan" class="${ui.input}">
+          <button data-act="order" class="${ui.btnWa} py-2.5" style="box-shadow:3px 3px 0 #FFC83D">Pesan via WhatsApp</button>
         </div>
-        <button data-act="order" class="${ui.btnWa} py-3 text-base">Pesan via WhatsApp &bull; <span id="cart-sum" class="ml-1"></span></button>
       </div>
     </div>
   `);
@@ -197,11 +254,15 @@ export async function renderLapak(slug) {
 
   function sync() {
     const items = entries();
-    document.querySelectorAll('[data-qty]').forEach((el) => (el.textContent = cart[el.dataset.qty] || 0));
-    const bar = document.getElementById('cart-bar');
-    bar.classList.toggle('hidden', items.length === 0);
+    document.querySelectorAll('[data-row]').forEach((r) => {
+      const q = cart[r.dataset.row] || 0;
+      r.querySelector('[data-add]').style.display = q > 0 ? 'none' : 'inline-flex';
+      r.querySelector('[data-step]').style.display = q > 0 ? 'inline-flex' : 'none';
+      r.querySelector('[data-qty]').textContent = q;
+    });
+    document.getElementById('cart-bar').classList.toggle('hidden', items.length === 0);
     document.getElementById('cart-sum').textContent =
-      `${items.reduce((a, [, q]) => a + q, 0)} item • ${rupiah(total())}`;
+      `${items.reduce((a, [, q]) => a + q, 0)} item, total ${rupiah(total())}`;
   }
 
   document.getElementById('app').onclick = (e) => {
@@ -248,33 +309,35 @@ export async function renderLogin() {
 
   if (state.user) {
     const isSuper = state.profile?.role === 'superadmin';
-    return show(v, `
-      <div class="max-w-sm mx-auto px-4 py-16 text-center">
-        <p class="text-sm text-slate-500">Anda sudah masuk sebagai</p>
-        <p class="font-bold mt-1">${esc(state.user.email)}</p>
-        <a href="${isSuper ? '#/superadmin' : '#/dashboard'}" class="${ui.btn} mt-5">Buka Dasbor</a>
-      </div>`);
+    return show(v, notice({
+      title: 'Kamu sudah masuk',
+      text: `Masuk sebagai <b>${esc(state.user.email)}</b>.`,
+      cta: { href: isSuper ? '#/superadmin' : '#/dashboard', label: 'Buka dasbor' },
+    }));
   }
 
   let mode = 'login';
 
   function draw(msg = '') {
     const isLogin = mode === 'login';
+    const tab = (m, label) => `
+      <button data-act="mode" data-mode="${m}" class="flex-1 py-2 text-sm font-bold border-b-4 ${mode === m ? 'border-ink text-ink' : 'border-transparent text-ink/50 hover:text-ink'}">${label}</button>`;
     show(v, `
       <div class="max-w-sm mx-auto px-4 py-12">
-        <div class="${ui.card} p-6">
-          <div class="grid grid-cols-2 bg-slate-100 rounded-lg p-1 text-sm font-semibold mb-5">
-            <button data-act="mode" data-mode="login" class="py-2 rounded-md ${isLogin ? 'bg-white shadow text-emerald-700' : 'text-slate-500'}">Masuk</button>
-            <button data-act="mode" data-mode="register" class="py-2 rounded-md ${!isLogin ? 'bg-white shadow text-emerald-700' : 'text-slate-500'}">Daftar</button>
+        <div class="bg-white border-2 border-ink rounded-xl overflow-hidden" style="box-shadow:5px 5px 0 #1B1A17">
+          <div class="awning"></div>
+          <div class="p-6">
+            <h1 class="font-display text-2xl font-extrabold">${isLogin ? 'Masuk ke NusaLapak' : 'Buat akun pemilik toko'}</h1>
+            <div class="flex mt-4 mb-5 border-b border-ink/15">${tab('login', 'Masuk')}${tab('register', 'Daftar')}</div>
+            ${msg ? `<div role="alert" class="mb-4 text-sm rounded-lg bg-kunyit/30 border border-kunyit-600 p-3">${esc(msg)}</div>` : ''}
+            <form id="auth-form" class="grid gap-3">
+              ${!isLogin ? `<div><label class="${ui.label}" for="f-name">Nama lengkap</label><input id="f-name" name="full_name" required maxlength="80" class="${ui.input}"></div>` : ''}
+              <div><label class="${ui.label}" for="f-email">Email</label><input id="f-email" name="email" type="email" required autocomplete="email" class="${ui.input}"></div>
+              <div><label class="${ui.label}" for="f-pass">Password</label><input id="f-pass" name="password" type="password" required minlength="6" autocomplete="${isLogin ? 'current-password' : 'new-password'}" class="${ui.input}"></div>
+              <button class="${ui.btn} mt-1 py-2.5" type="submit">${isLogin ? 'Masuk' : 'Buat akun'}</button>
+            </form>
+            ${!isLogin ? '<p class="text-xs text-ink/60 mt-3">Setelah mendaftar, kirim emailmu ke admin NusaLapak supaya lapakmu ditautkan ke akun ini.</p>' : ''}
           </div>
-          ${msg ? `<div class="mb-4 text-sm rounded-lg bg-amber-50 border border-amber-200 text-amber-800 p-3">${esc(msg)}</div>` : ''}
-          <form id="auth-form" class="grid gap-3">
-            ${!isLogin ? `<div><label class="${ui.label}">Nama Lengkap</label><input name="full_name" required maxlength="80" class="${ui.input}"></div>` : ''}
-            <div><label class="${ui.label}">Email</label><input name="email" type="email" required autocomplete="email" class="${ui.input}"></div>
-            <div><label class="${ui.label}">Password</label><input name="password" type="password" required minlength="6" autocomplete="${isLogin ? 'current-password' : 'new-password'}" class="${ui.input}"></div>
-            <button class="${ui.btn} mt-1" type="submit">${isLogin ? 'Masuk' : 'Buat Akun'}</button>
-          </form>
-          ${!isLogin ? '<p class="text-xs text-slate-500 mt-3">Setelah mendaftar, beri tahu admin NusaLapak email Anda agar lapak Anda bisa ditautkan ke akun ini.</p>' : ''}
         </div>
       </div>`);
   }
@@ -308,7 +371,7 @@ export async function renderLogin() {
         if (error) throw error;
         if (!data.session) {
           mode = 'login';
-          return draw('Akun dibuat. Silakan cek email untuk konfirmasi, lalu masuk.');
+          return draw('Akun dibuat. Cek emailmu untuk konfirmasi, lalu masuk.');
         }
       }
       await loadAuth();
@@ -325,7 +388,7 @@ export async function renderLogin() {
 function translateAuthError(m = '') {
   if (/invalid login/i.test(m)) return 'Email atau password salah.';
   if (/already registered/i.test(m)) return 'Email sudah terdaftar, silakan masuk.';
-  if (/email not confirmed/i.test(m)) return 'Email belum dikonfirmasi. Cek kotak masuk Anda.';
+  if (/email not confirmed/i.test(m)) return 'Email belum dikonfirmasi. Cek kotak masuk kamu.';
   if (/password/i.test(m)) return 'Password minimal 6 karakter.';
   return m;
 }

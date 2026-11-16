@@ -1,23 +1,23 @@
-import { loadAuth, renderNav, begin, show, errBox, ui } from './core.js';
+import { loadAuth, renderNav, begin, show, errBox, notice } from './core.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { renderHome, renderLapak, renderLogin } from './public.js';
 import { renderSuperadmin, renderDashboard } from './admin.js';
 
+const DEFAULT_TITLE = 'NusaLapak - Etalase Digital UMKM';
 const notConfigured = () =>
   SUPABASE_URL.includes('ISI-') || SUPABASE_ANON_KEY.includes('ISI-');
 
 async function route() {
+  document.title = DEFAULT_TITLE;
   renderNav();
   window.scrollTo(0, 0);
 
   if (notConfigured()) {
     const v = begin();
-    return show(v, `
-      <div class="max-w-md mx-auto px-4 py-20 text-center">
-        <div class="text-5xl">⚙️</div>
-        <h1 class="text-xl font-bold mt-4">Konfigurasi Belum Diisi</h1>
-        <p class="text-sm text-slate-500 mt-2">Buka file <code class="bg-slate-100 px-1 rounded">config.js</code> lalu isi SUPABASE_URL, SUPABASE_ANON_KEY, dan ADMIN_WA.</p>
-      </div>`);
+    return show(v, notice({
+      title: 'Konfigurasi belum diisi',
+      text: 'Buka file <code class="bg-ink/10 px-1 rounded">config.js</code>, lalu isi SUPABASE_URL, SUPABASE_ANON_KEY, dan ADMIN_WA.',
+    }));
   }
 
   const raw = location.hash.replace(/^#/, '') || '/';
@@ -31,12 +31,11 @@ async function route() {
     else if (path === '/dashboard') await renderDashboard();
     else {
       const v = begin();
-      show(v, `
-        <div class="max-w-md mx-auto px-4 py-20 text-center">
-          <div class="text-5xl">🧭</div>
-          <h1 class="text-xl font-bold mt-4">Halaman Tidak Ditemukan</h1>
-          <a href="#/" class="${ui.btn} mt-6">Ke Beranda</a>
-        </div>`);
+      show(v, notice({
+        title: 'Halaman tidak ditemukan',
+        text: 'Alamat yang kamu buka tidak ada di NusaLapak.',
+        cta: { href: '#/', label: 'Ke beranda' },
+      }));
     }
   } catch (err) {
     console.error(err);

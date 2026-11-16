@@ -1,17 +1,15 @@
-import { sb, state, view, ui, esc, rupiah, safeUrl, slugify, toast, spinner, errBox, begin, show, navigate } from './core.js';
+import { sb, state, view, ui, esc, rupiah, safeUrl, slugify, toast, spinner, errBox, notice, begin, show, navigate } from './core.js';
 
 const badge = (on) =>
   on
-    ? '<span class="text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5">AKTIF</span>'
-    : '<span class="text-[11px] font-bold rounded-full bg-red-100 text-red-700 px-2 py-0.5">DITANGGUHKAN</span>';
+    ? '<span class="text-[11px] font-bold rounded-full bg-pandan-50 text-pandan px-2 py-0.5">Aktif</span>'
+    : '<span class="text-[11px] font-bold rounded-full bg-sambal/10 text-sambal-700 px-2 py-0.5">Ditangguhkan</span>';
 
-const denied = `
-  <div class="max-w-md mx-auto px-4 py-20 text-center">
-    <div class="text-5xl">🚫</div>
-    <h1 class="text-xl font-bold mt-4">Akses Ditolak</h1>
-    <p class="text-sm text-slate-500 mt-2">Halaman ini khusus Super Admin.</p>
-    <a href="#/" class="${ui.btn} mt-6">Ke Beranda</a>
-  </div>`;
+const denied = notice({
+  title: 'Akses ditolak',
+  text: 'Halaman ini khusus Super Admin.',
+  cta: { href: '#/', label: 'Ke beranda' },
+});
 
 // =====================================================
 // DASBOR SUPER ADMIN  (#/superadmin)
@@ -24,12 +22,12 @@ export async function renderSuperadmin() {
   show(v, `
     <div class="max-w-5xl mx-auto px-4 py-6 grid gap-8">
       <div>
-        <h1 class="text-2xl font-extrabold">Dasbor Super Admin</h1>
+        <h1 class="font-display text-3xl font-extrabold">Dasbor Super Admin</h1>
         <p class="text-sm text-slate-500">Kelola klien UMKM, langganan, dan akun.</p>
       </div>
 
       <section class="${ui.card} p-5">
-        <h2 class="font-bold mb-3">Daftarkan Toko UMKM Baru</h2>
+        <h2 class="font-display text-lg font-bold mb-3">Daftarkan Toko UMKM Baru</h2>
         <form id="store-form" class="grid sm:grid-cols-2 gap-3">
           <div><label class="${ui.label}">Nama Usaha</label><input name="name" required maxlength="80" class="${ui.input}"></div>
           <div><label class="${ui.label}">Slug URL (huruf kecil, angka, strip)</label><input name="slug" required maxlength="50" pattern="[a-z0-9]+(-[a-z0-9]+)*" class="${ui.input}"></div>
@@ -44,12 +42,12 @@ export async function renderSuperadmin() {
       </section>
 
       <section>
-        <h2 class="font-bold mb-3">Daftar Klien UMKM <span id="store-count" class="text-slate-400 font-normal"></span></h2>
+        <h2 class="font-display text-lg font-bold mb-3">Daftar Klien UMKM <span id="store-count" class="text-slate-400 font-normal"></span></h2>
         <div id="sa-stores" class="grid gap-3">${spinner}</div>
       </section>
 
       <section>
-        <h2 class="font-bold mb-3">Akun Terdaftar <span id="acc-count" class="text-slate-400 font-normal"></span></h2>
+        <h2 class="font-display text-lg font-bold mb-3">Akun Terdaftar <span id="acc-count" class="text-slate-400 font-normal"></span></h2>
         <div id="sa-accounts" class="${ui.card} overflow-x-auto">${spinner}</div>
       </section>
     </div>`);
@@ -91,7 +89,7 @@ export async function renderSuperadmin() {
           </div>
           <div class="flex gap-2 flex-wrap">
             <a href="#/lapak/${esc(s.slug)}" target="_blank" class="${ui.btnGhost}">Lihat</a>
-            <button data-act="toggle" data-id="${esc(s.id)}" class="${s.is_active ? ui.btnDanger : ui.btn + ' !py-1.5 !px-3 !text-xs'}">
+            <button data-act="toggle" data-id="${esc(s.id)}" class="${s.is_active ? ui.btnDanger : ui.btnSm}">
               ${s.is_active ? 'Nonaktifkan' : 'Aktifkan'}
             </button>
             <button data-act="del" data-id="${esc(s.id)}" class="${ui.btnGhost}">Hapus</button>
@@ -196,12 +194,10 @@ export async function renderDashboard() {
   if (error) return show(v, errBox(error.message));
 
   if (!stores.length) {
-    return show(v, `
-      <div class="max-w-md mx-auto px-4 py-20 text-center">
-        <div class="text-5xl">🏪</div>
-        <h1 class="text-xl font-bold mt-4">Belum Ada Toko</h1>
-        <p class="text-sm text-slate-500 mt-2">Akun <b>${esc(state.user.email)}</b> belum ditautkan ke toko mana pun. Hubungi admin NusaLapak dan sebutkan email ini.</p>
-      </div>`);
+    return show(v, notice({
+      title: 'Belum ada toko',
+      text: `Akun <b>${esc(state.user.email)}</b> belum ditautkan ke toko mana pun. Hubungi admin NusaLapak dan sebutkan email ini.`,
+    }));
   }
 
   let store = stores[0];
@@ -213,7 +209,7 @@ export async function renderDashboard() {
       <div id="store-head"></div>
 
       <section class="${ui.card} p-5">
-        <h2 class="font-bold mb-3" id="pf-title">Tambah Produk / Menu</h2>
+        <h2 class="font-display text-lg font-bold mb-3" id="pf-title">Tambah Produk / Menu</h2>
         <form id="pf" class="grid sm:grid-cols-2 gap-3">
           <div><label class="${ui.label}">Nama Produk</label><input name="name" required maxlength="100" class="${ui.input}"></div>
           <div><label class="${ui.label}">Harga (Rp)</label><input name="price" type="number" min="0" step="1" required inputmode="numeric" class="${ui.input}"></div>
@@ -228,7 +224,7 @@ export async function renderDashboard() {
       </section>
 
       <section>
-        <h2 class="font-bold mb-3">Produk Saya <span id="p-count" class="text-slate-400 font-normal"></span></h2>
+        <h2 class="font-display text-lg font-bold mb-3">Produk Saya <span id="p-count" class="text-slate-400 font-normal"></span></h2>
         <div id="p-list" class="grid gap-3">${spinner}</div>
       </section>
     </div>`);
@@ -242,7 +238,7 @@ export async function renderDashboard() {
       <div class="${ui.card} p-5">
         ${stores.length > 1 ? `<select id="store-select" class="${ui.input} mb-3">${stores.map((s) => `<option value="${esc(s.id)}" ${s.id === store.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
         <div class="flex items-center gap-2 flex-wrap">
-          <h1 class="text-xl font-extrabold">${esc(store.name)}</h1> ${badge(store.is_active)}
+          <h1 class="font-display text-2xl font-extrabold">${esc(store.name)}</h1> ${badge(store.is_active)}
           <span class="text-xs text-slate-500">paket ${esc(store.plan)}</span>
         </div>
         <p class="text-xs text-slate-500 mt-1 break-all">Link lapak: <a class="text-emerald-700 underline" href="#/lapak/${esc(store.slug)}" target="_blank">${esc(url)}</a></p>
@@ -267,7 +263,7 @@ export async function renderDashboard() {
           <div class="${ui.card} p-3 flex gap-3 items-center">
             ${img ? `<img src="${esc(img)}" alt="" class="w-16 h-16 rounded-lg object-cover flex-shrink-0" onerror="this.remove()">` : ''}
             <div class="min-w-0 flex-1">
-              <div class="font-semibold truncate">${esc(p.name)} ${p.is_available ? '' : '<span class="text-[11px] text-red-600 font-bold ml-1">HABIS</span>'}</div>
+              <div class="font-semibold truncate">${esc(p.name)} ${p.is_available ? '' : '<span class="text-[11px] text-red-600 font-bold ml-1">Habis</span>'}</div>
               <div class="text-sm text-emerald-700 font-bold">${rupiah(p.price)}</div>
               ${p.description ? `<div class="text-xs text-slate-500 truncate">${esc(p.description)}</div>` : ''}
             </div>

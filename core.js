@@ -7,13 +7,15 @@ export const view = { id: 0 };
 
 // ---------- Kelas Tailwind yang dipakai ulang ----------
 export const ui = {
-  input: 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500',
-  label: 'block text-xs font-semibold text-slate-600 mb-1',
-  btn: 'inline-flex items-center justify-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 transition disabled:opacity-50',
-  btnWa: 'inline-flex items-center justify-center rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 transition',
-  btnGhost: 'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1.5 transition',
-  btnDanger: 'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white hover:bg-red-50 text-red-600 text-xs font-semibold px-3 py-1.5 transition',
-  card: 'bg-white border border-slate-200 rounded-xl',
+  input: 'w-full rounded-lg border-2 border-ink/20 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:border-ink focus:outline-none',
+  label: 'block text-xs font-semibold text-ink/70 mb-1',
+  btn: 'sticker inline-flex items-center justify-center rounded-lg bg-pandan text-white text-sm font-bold px-4 py-2',
+  btnSm: 'inline-flex items-center justify-center rounded-md bg-pandan hover:bg-pandan-700 text-white text-xs font-semibold px-3 py-1.5 transition disabled:opacity-50',
+  btnWa: 'sticker inline-flex items-center justify-center rounded-lg bg-[#25D366] text-ink text-sm font-bold px-4 py-2',
+  btnLight: 'sticker inline-flex items-center justify-center rounded-lg bg-white text-ink text-sm font-bold px-4 py-2',
+  btnGhost: 'inline-flex items-center justify-center rounded-md border border-ink/25 bg-white hover:bg-ink/5 text-ink text-xs font-semibold px-3 py-1.5 transition',
+  btnDanger: 'inline-flex items-center justify-center rounded-md border border-sambal/50 bg-white hover:bg-sambal/10 text-sambal text-xs font-semibold px-3 py-1.5 transition',
+  card: 'bg-white border border-ink/15 rounded-xl',
 };
 
 // ---------- Helper umum ----------
@@ -44,22 +46,38 @@ export const slugify = (s) =>
   String(s || '')
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 50);
 
 export function toast(msg, ok = true) {
   const el = document.createElement('div');
-  el.className = `fixed top-16 left-1/2 -translate-x-1/2 z-50 max-w-[90vw] px-4 py-2 rounded-lg shadow-lg text-sm text-white ${ok ? 'bg-emerald-600' : 'bg-red-600'}`;
+  el.setAttribute('role', 'status');
+  el.className = `fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-[90vw] px-4 py-2.5 rounded-lg border-2 border-ink text-sm font-semibold text-white ${ok ? 'bg-pandan' : 'bg-sambal'}`;
+  el.style.boxShadow = '3px 3px 0 #1B1A17';
   el.textContent = msg;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 3800);
 }
 
-export const spinner = '<div class="py-20 text-center text-slate-400 text-sm">Memuat...</div>';
+export const spinner = '<div class="py-24 text-center text-ink/50 text-sm font-medium">Memuat...</div>';
+
+// Kartu pemberitahuan (ditangguhkan, tidak ditemukan, error, dll.)
+export const notice = ({ title, text, cta }) => `
+  <div class="max-w-md mx-auto px-4 py-14">
+    <div class="bg-white border-2 border-ink rounded-xl overflow-hidden" style="box-shadow:5px 5px 0 #1B1A17">
+      <div class="awning"></div>
+      <div class="p-6 text-center">
+        <h1 class="font-display text-2xl font-extrabold">${title}</h1>
+        <p class="text-sm text-ink/70 mt-2">${text}</p>
+        ${cta ? `<a href="${cta.href}" class="${ui.btn} mt-5">${cta.label}</a>` : ''}
+      </div>
+    </div>
+  </div>`;
+
 export const errBox = (msg) =>
-  `<div class="max-w-xl mx-auto px-4 py-16 text-center"><p class="text-red-600 font-semibold">Terjadi kesalahan</p><p class="text-sm text-slate-500 mt-2">${esc(msg)}</p></div>`;
+  notice({ title: 'Terjadi kesalahan', text: esc(msg), cta: { href: '#/', label: 'Ke beranda' } });
 
 // ---------- Render area utama (anti-balapan antar halaman) ----------
 export function begin() {
@@ -90,18 +108,27 @@ export function navigate(hash) {
   else location.hash = hash;
 }
 
+const logo = `
+  <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+    <rect x="4" y="13" width="22" height="14" fill="#1B1A17"/>
+    <rect x="12" y="18" width="6" height="9" fill="#FFC83D"/>
+    <path d="M2 13 L6 3 H24 L28 13 Z" fill="#E2341D"/>
+    <path d="M10 3 L9 13 M15 3 V13 M20 3 L21 13" stroke="#fff" stroke-width="2.4"/>
+  </svg>`;
+
 export function renderNav() {
   const nav = document.getElementById('nav');
   const isSuper = state.profile?.role === 'superadmin';
-  const link = 'text-slate-600 hover:text-emerald-700 font-medium';
+  const link = 'text-ink/70 hover:text-ink font-semibold';
   nav.innerHTML = `
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-      <a href="#/" class="font-extrabold text-lg text-emerald-700">Nusa<span class="text-amber-500">Lapak</span></a>
+      <a href="#/" class="flex items-center gap-2 font-display font-extrabold text-xl text-ink">${logo}<span>NusaLapak</span></a>
       <div class="flex items-center gap-4 text-sm">
         ${isSuper ? `<a href="#/superadmin" class="${link}">Super Admin</a>` : ''}
-        ${state.user ? `<a href="#/dashboard" class="${link}">Dasbor</a>
-          <button data-logout class="${link}">Keluar</button>`
-          : `<a href="#/login" class="${link}">Masuk</a>`}
+        ${state.user
+          ? `<a href="#/dashboard" class="${link}">Dasbor</a>
+             <button data-logout class="${link}">Keluar</button>`
+          : `<a href="#/login" class="sticker rounded-md bg-kunyit text-ink font-bold px-3 py-1.5">Masuk</a>`}
       </div>
     </div>`;
   nav.onclick = async (e) => {
